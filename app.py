@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File , HTTPException
 from fastapi.responses import StreamingResponse
 from io import BytesIO
 from PIL import Image
@@ -15,12 +15,15 @@ app = FastAPI()
 
 # Helper function to load image into a tensor
 def load_image_into_tensor(image_bytes):
+    try:
     img = Image.open(BytesIO(image_bytes)).convert('RGB')
     img = img.resize((256, 256))
     img = np.array(img) / 255.0
     img = tf.convert_to_tensor(img, dtype=tf.float32)
     img = tf.expand_dims(img, axis=0)
     return img
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid image uploaded.")
 
 # Define the stylize endpoint
 @app.post("/stylize/")
