@@ -30,19 +30,18 @@ async def apply_style(content_image: UploadFile = File(...), style_image: Upload
     content_image_tensor = preprocess_image(content_image_bytes)
     style_image_tensor = preprocess_image(style_image_bytes)
 
-    # Apply style transfer
-    stylized_image = model(content_image_tensor, style_image_tensor)[0]
-    stylized_image = np.array(stylized_image[0] * 255, dtype=np.uint8)
+    # Correct model call
+    stylized_image = model(content_image=content_image_tensor, style_image=style_image_tensor)[0]
 
-    # Convert the tensor to an image
+    stylized_image = np.array(stylized_image * 255, dtype=np.uint8)
+
     pil_image = Image.fromarray(stylized_image)
 
-    # Save the result as a temporary in-memory image file
     img_byte_arr = io.BytesIO()
     pil_image.save(img_byte_arr, format='PNG')
     img_byte_arr.seek(0)
 
     return {
         "message": "Style transfer applied successfully",
-        "image": img_byte_arr.getvalue()  # Return as base64 or image file
+        "image": img_byte_arr.getvalue()
     }
